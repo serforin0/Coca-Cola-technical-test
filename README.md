@@ -1,2 +1,10 @@
-# Coca-Cola-technical-test
-This was a technical test for the Coca-Cola company for backend.
+# Coca-Cola Technical Test
+
+This project is a **technical backend test** developed for the **Coca-Cola / Coca-Cola company**.
+
+It is built using **PHP** and **MySQL**, and runs locally using **Laragon** (or any LAMP stack).
+
+---
+
+## 🏗️ Project Structure
+

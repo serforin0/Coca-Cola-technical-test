@@ -1,0 +1,39 @@
+
+---
+
+## 🧼 **.gitignore**
+
+Aquí te dejo un `.gitignore` recomendado para proyectos PHP locales con Laragon o XAMPP:
+
+```gitignore
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+.vscode/
+.idea/
+
+# Composer
+/vendor/
+composer.lock
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Laravel / Symfony cache (por si usas más adelante)
+bootstrap/cache/
+storage/
+.cache/
+
+# Node / Frontend (por si agregas UI)
+node_modules/
+dist/
+build/
+
+# Misc
+*.sql~
+*.bak
+*.swp
