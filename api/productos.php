@@ -120,6 +120,11 @@ if (isset($_GET['mensaje'])) {
     </style>
 </head>
 <body>
+    <nav>
+  <a href="productos.php">Productos</a> |
+  <a href="clientes.php">Clientes</a> |
+  <a href="pedidos.php">Pedidos</a>
+</nav>
 
 <h1>Gestión de Productos</h1>
 
