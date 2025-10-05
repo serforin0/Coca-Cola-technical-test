@@ -6,6 +6,7 @@ Aplicación web completa para la gestión de **productos**, **clientes** y **ped
 
 ### 📦 Productos
 - CRUD visual completo (`productos.php`)
+- Búsqueda por nombre
 - Gestión de stock en tiempo real
 - Validación de datos (precio ≥ 0, stock ≥ 0)
 
@@ -15,31 +16,41 @@ Aplicación web completa para la gestión de **productos**, **clientes** y **ped
 - Validación de campos obligatorios
 
 ### 🛒 Pedidos
-- Creación de pedidos con selección de cliente y producto
-- Validación automática de **stock disponible**
+- Creación de pedidos con **múltiples productos**
+- Validación automática de **stock disponible por producto**
 - Cálculo automático del **total del pedido**
-- Descuento inmediato del stock al confirmar el pedido
-- Soporte para estado del pedido (pendiente, pagado, entregado, cancelado)
+- Descuento inmediato del stock al confirmar
+- Soporte para estados: pendiente, pagado, entregado, cancelado
+
+### 🔍 Detalle de pedido
+- Vista detallada por pedido (`pedido_detalle.php?id=123`)
+- Posibilidad de **cambiar el estado** del pedido desde la interfaz
 
 ### 📊 Reportes Avanzados (`reporte.php`)
 - **Procedimientos almacenados (Stored Procedures)** para:
   - Productos más vendidos en un rango de fechas
   - Productos con stock bajo (con umbral configurable)
-  - Resumen de ventas por estado
-- **Vistas SQL** para resumen de clientes y actividad
+  - Ventas por estado
+  - Productos nunca vendidos
+- **Vistas SQL** optimizadas para resúmenes
 - Filtros interactivos por fecha y estado
-- Interfaz clara y optimizada para toma de decisiones
 
 ### 🔒 Seguridad y buenas prácticas
 - Uso de **PDO con consultas preparadas** (evita inyección SQL)
-- Validación de entradas y redirección tras operaciones (previene reenvíos)
-- Estructura de base de datos relacional normalizada (1:N y N:M)
+- Redirección tras operaciones (previene reenvíos)
+- Estructura relacional normalizada (1:N y N:M)
 - Código limpio, modular y mantenible
+
+## ⚙️ Optimizaciones en la base de datos
+- Índices en campos críticos (`email`, `nombre`, `fecha_creacion`)
+- Restricciones `CHECK` para evitar datos inválidos (stock negativo, etc.)
+- Procedimientos almacenados avanzados para lógica de negocio
+- Vistas precalculadas para reportes rápidos
 
 ## 🛠️ Requisitos
 
 - Servidor local con **PHP 7.4+** (XAMPP, WAMP, etc.)
-- **MySQL / MariaDB**
+- **MySQL 8+ / MariaDB 10.2+**
 - Navegador web moderno
 
 ## 🚀 Instalación

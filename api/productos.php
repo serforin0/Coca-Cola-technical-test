@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// Configuración de la base de datos
 $host = 'localhost';
 $dbname = 'bebidas_db';
 $user = 'root';
-$pass = ''; // Ajusta si usas contraseña
+$pass = '';
 
-// Conexión PDO
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -15,7 +13,6 @@ try {
     die("Error de conexión: " . $e->getMessage());
 }
 
-// Inicializar mensaje de éxito/error
 $mensaje = '';
 
 // ----------------------------
@@ -29,8 +26,7 @@ if (isset($_GET['eliminar']) && is_numeric($_GET['eliminar'])) {
     } else {
         $mensaje = "<p style='color:red;'>Error al eliminar el producto.</p>";
     }
-    // Redirigir para evitar reenvío al recargar
-    header("Location: productos.php?mensaje=" . urlencode($mensaje));
+    header("Location: productos.php?mensaje=" . urlencode($mensaje) . (isset($_GET['busqueda']) ? "&busqueda=" . urlencode($_GET['busqueda']) : ''));
     exit;
 }
 
@@ -53,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_id'])) {
     } else {
         $mensaje = "<p style='color:red;'>Datos inválidos.</p>";
     }
-    header("Location: productos.php?mensaje=" . urlencode($mensaje));
+    header("Location: productos.php?mensaje=" . urlencode($mensaje) . (isset($_GET['busqueda']) ? "&busqueda=" . urlencode($_GET['busqueda']) : ''));
     exit;
 }
 
@@ -75,12 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     } else {
         $mensaje = "<p style='color:red;'>Datos inválidos.</p>";
     }
-    header("Location: productos.php?mensaje=" . urlencode($mensaje));
+    header("Location: productos.php?mensaje=" . urlencode($mensaje) . (isset($_GET['busqueda']) ? "&busqueda=" . urlencode($_GET['busqueda']) : ''));
     exit;
 }
 
 // ----------------------------
-// OBTENER producto para editar (modo formulario)
+// OBTENER producto para editar
 // ----------------------------
 $editar = null;
 if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
@@ -91,12 +87,17 @@ if (isset($_GET['editar']) && is_numeric($_GET['editar'])) {
 }
 
 // ----------------------------
-// LISTAR productos
+// BUSCAR productos
 // ----------------------------
-$stmt = $pdo->query("SELECT * FROM productos ORDER BY id");
+$busqueda = $_GET['busqueda'] ?? '';
+if ($busqueda !== '') {
+    $stmt = $pdo->prepare("SELECT * FROM productos WHERE nombre LIKE ? ORDER BY id");
+    $stmt->execute(['%' . $busqueda . '%']);
+} else {
+    $stmt = $pdo->query("SELECT * FROM productos ORDER BY id");
+}
 $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Mostrar mensaje si existe
 if (isset($_GET['mensaje'])) {
     $mensaje = urldecode($_GET['mensaje']);
 }
@@ -115,15 +116,17 @@ if (isset($_GET['mensaje'])) {
         .form-container { background: #f9f9f9; padding: 15px; margin: 20px 0; border: 1px solid #ddd; }
         input[type="text"], input[type="number"] { width: 200px; padding: 5px; }
         button { padding: 6px 12px; margin: 5px 0; }
-        .error { color: red; }
-        .success { color: green; }
+        .search-box { margin: 10px 0; }
+        .search-box input { width: 300px; padding: 6px; }
     </style>
 </head>
 <body>
-    <nav>
+
+<nav>
   <a href="productos.php">Productos</a> |
   <a href="clientes.php">Clientes</a> |
-  <a href="pedidos.php">Pedidos</a>
+  <a href="pedidos.php">Pedidos</a> |
+  <a href="reporte.php">Reportes</a>
 </nav>
 
 <h1>Gestión de Productos</h1>
@@ -131,6 +134,20 @@ if (isset($_GET['mensaje'])) {
 <?php if ($mensaje): ?>
     <?= $mensaje ?>
 <?php endif; ?>
+
+<!-- Buscador -->
+<div class="search-box">
+    <form method="GET">
+        <label>
+            Buscar por nombre:
+            <input type="text" name="busqueda" value="<?= htmlspecialchars($busqueda) ?>" placeholder="Ej: Kola Real">
+        </label>
+        <button type="submit">Buscar</button>
+        <?php if ($busqueda !== ''): ?>
+            <a href="productos.php">Ver todos</a>
+        <?php endif; ?>
+    </form>
+</div>
 
 <!-- Formulario de Creación o Edición -->
 <div class="form-container">
@@ -152,15 +169,15 @@ if (isset($_GET['mensaje'])) {
             <input type="number" name="stock" value="<?= $editar ? htmlspecialchars($editar['stock']) : '' ?>" min="0" required>
         </label><br><br>
 
-        <button type="submit" name="crear" value="1">Crear Producto</button>
+        <button type="submit" name="crear" value="1"><?= $editar ? 'Actualizar' : 'Crear Producto' ?></button>
         <?php if ($editar): ?>
-            <a href="productos.php">Cancelar edición</a>
+            <a href="productos.php<?= $busqueda ? '?busqueda=' . urlencode($busqueda) : '' ?>">Cancelar edición</a>
         <?php endif; ?>
     </form>
 </div>
 
 <!-- Lista de Productos -->
-<h2>Lista de Productos</h2>
+<h2>Lista de Productos <?= $busqueda ? "(Resultados para: " . htmlspecialchars($busqueda) . ")" : "" ?></h2>
 <?php if ($productos): ?>
     <table>
         <thead>
@@ -180,15 +197,15 @@ if (isset($_GET['mensaje'])) {
                     <td><?= number_format($p['precio'], 2) ?></td>
                     <td><?= htmlspecialchars($p['stock']) ?></td>
                     <td>
-                        <a href="?editar=<?= $p['id'] ?>">✏️ Editar</a> |
-                        <a href="?eliminar=<?= $p['id'] ?>" onclick="return confirm('¿Eliminar este producto?')" style="color:red;">🗑️ Eliminar</a>
+                        <a href="?editar=<?= $p['id'] ?><?= $busqueda ? '&busqueda=' . urlencode($busqueda) : '' ?>">✏️ Editar</a> |
+                        <a href="?eliminar=<?= $p['id'] ?><?= $busqueda ? '&busqueda=' . urlencode($busqueda) : '' ?>" onclick="return confirm('¿Eliminar este producto?')" style="color:red;">🗑️ Eliminar</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 <?php else: ?>
-    <p>No hay productos registrados.</p>
+    <p>No se encontraron productos.</p>
 <?php endif; ?>
 
 </body>
